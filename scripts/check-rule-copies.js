@@ -40,10 +40,19 @@ const IDE_COPIES = [
   ['.windsurf/rules/snip.md', {}],
   ['.clinerules/snip.md', {}],
   ['.github/copilot-instructions.md', {}],
+  // Gemini CLI: project-level GEMINI.md
+  ['.gemini/GEMINI.md', {}],
+  // Aider: CONVENTIONS.md (referenced from .aider.conf.yml)
+  ['CONVENTIONS.md', {}],
+  // Continue.dev: rules file with frontmatter
+  ['.continue/rules/snip.md', {
+    prependFrontmatter: '---\nname: Snip ruthless efficiency mode\nglobs:\nalwaysApply: true\n---',
+  }],
 ];
 
 const INVARIANTS = [
   'snip:prod',
+  'snip:safe',
   'Can this be deleted entirely',
   'ONE runnable check',
   'trust boundaries',

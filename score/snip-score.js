@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Heuristic patterns: each entry has a test(line) → bool.
-// A line matching any pattern counts as "deletable" unless it's a snip:prod line.
+// A line matching any pattern counts as "deletable" unless it's a snip:prod/snip:safe line.
 const PATTERNS = [
   // Hand-rolled sort implementations
   { name: 'hand-rolled-sort', test: (l) => /function\s+\w*[Ss]ort\w*\s*\(/.test(l) && !/\.sort\(/.test(l) },
@@ -27,6 +27,31 @@ const PATTERNS = [
   { name: 'config-class', test: (l) => /class\s+\w+(Config|Configuration|Settings)(Manager|Loader|Reader|Builder)?\b/.test(l) },
   // Convenience wrapper functions (wrapper around stdlib)
   { name: 'convenience-wrapper', test: (l) => /function\s+\w*(Wrapper|Util|Helper)\w*\s*\(/.test(l) },
+
+  // ── New patterns ──────────────────────────────────────────────────────────
+
+  // Builder pattern with single build() target (GoF Builder for one output type)
+  { name: 'builder-class', test: (l) => /class\s+\w+Builder\b/.test(l) },
+  // DTO/VO suffix classes — often ceremony around plain objects
+  { name: 'dto-class', test: (l) => /class\s+\w+(Dto|VO|ValueObject|DataTransferObject)\b/i.test(l) },
+  // Mapper classes — usually a function would do
+  { name: 'mapper-class', test: (l) => /class\s+\w+Mapper\b/.test(l) },
+  // Decorator/Wrapper class patterns (not the language decorator syntax)
+  { name: 'wrapper-class', test: (l) => /class\s+\w+(Wrapper|Decorator|Adapter|Proxy)\b/.test(l) },
+  // Hand-rolled UUID / random ID generation without stdlib
+  { name: 'hand-rolled-uuid', test: (l) => /Math\.random\(\)\.toString\(36\)|new\s+Date\(\)\.getTime\(\)\s*\+\s*Math/.test(l) },
+  // Logging wrapper classes (log4j-style wrapper over the platform logger)
+  { name: 'logger-wrapper', test: (l) => /class\s+\w*(Logger|Log|Logging)(Wrapper|Adapter|Factory|Manager)?\b/.test(l) },
+  // Hand-rolled debounce/throttle function declarations
+  { name: 'hand-rolled-debounce', test: (l) => /function\s+\w*(debounce|throttle)\w*\s*\(/i.test(l) },
+  // EventEmitter/EventBus classes with one listener type (pub/sub over a plain callback)
+  { name: 'single-event-bus', test: (l) => /class\s+\w*(EventBus|EventEmitter|EventDispatcher|PubSub)\b/.test(l) },
+  // Hand-rolled deep clone / deep copy function
+  { name: 'hand-rolled-deep-clone', test: (l) => /function\s+\w*(deepClone|deepCopy|cloneDeep)\w*\s*\(/i.test(l) },
+  // Singleton pattern boilerplate (getInstance static method)
+  { name: 'singleton-pattern', test: (l) => /static\s+\w*getInstance\w*\s*\(/.test(l) },
+  // Abstract factory with one concrete factory
+  { name: 'abstract-factory', test: (l) => /class\s+\w+(AbstractFactory|FactoryBase|BaseFactory)\b/.test(l) },
 ];
 
 // Count non-blank, non-comment lines in a text block.
@@ -54,6 +79,7 @@ function scoreFile(filePath) {
   const findings = [];
   let deletableLoc = 0;
   let prodLines = 0;
+  let safeLines = 0;
   let totalLoc = 0;
 
   for (let i = 0; i < lines.length; i++) {
@@ -61,9 +87,15 @@ function scoreFile(filePath) {
     const trimmed = line.trim();
     if (!trimmed) continue;
 
-    // snip:prod lines are correctly complex — exclude from score entirely
+    // snip:prod — correctly complex trust boundary; exclude from score entirely
     if (/snip:prod/i.test(line)) {
       prodLines++;
+      continue;
+    }
+
+    // snip:safe — necessary test infrastructure; exclude from score entirely
+    if (/snip:safe/i.test(line)) {
+      safeLines++;
       continue;
     }
 
@@ -91,11 +123,11 @@ function scoreFile(filePath) {
 
   const score = totalLoc === 0 ? 100 : Math.round(100 - (100 * deletableLoc / totalLoc));
 
-  return { score, deletableLoc, totalLoc, prodLines, findings };
+  return { score, deletableLoc, totalLoc, prodLines, safeLines, findings };
 }
 
 function scoreDir(dirPath, opts = {}) {
-  const { recursive = true, extensions = ['.js', '.ts', '.tsx', '.py', '.go'] } = opts;
+  const { recursive = true, extensions = ['.js', '.ts', '.tsx', '.py', '.go', '.rs', '.java', '.cs'] } = opts;
 
   function collectFiles(dir) {
     let results = [];
@@ -121,9 +153,10 @@ function scoreDir(dirPath, opts = {}) {
   const totalDeletable = validResults.reduce((s, r) => s + r.deletableLoc, 0);
   const totalLoc = validResults.reduce((s, r) => s + r.totalLoc, 0);
   const totalProd = validResults.reduce((s, r) => s + r.prodLines, 0);
+  const totalSafe = validResults.reduce((s, r) => s + r.safeLines, 0);
   const overall = totalLoc === 0 ? 100 : Math.round(100 - (100 * totalDeletable / totalLoc));
 
-  return { files: results, overall, prodLines: totalProd };
+  return { files: results, overall, prodLines: totalProd, safeLines: totalSafe };
 }
 
 function formatReport(result, { rootDir = process.cwd() } = {}) {
@@ -135,19 +168,24 @@ function formatReport(result, { rootDir = process.cwd() } = {}) {
     for (const f of result.files) {
       if (f.score === null) continue;
       const rel = path.relative(rootDir, f.file);
-      const prodNote = f.prodLines > 0 ? `  (${f.prodLines} snip:prod lines protected)` : '';
-      lines.push(`  ${rel.padEnd(40)} score: ${String(f.score).padStart(3)}${prodNote}`);
+      const notes = [];
+      if (f.prodLines > 0) notes.push(`${f.prodLines} snip:prod`);
+      if (f.safeLines > 0) notes.push(`${f.safeLines} snip:safe`);
+      const noteStr = notes.length > 0 ? `  (${notes.join(', ')})` : '';
+      lines.push(`  ${rel.padEnd(40)} score: ${String(f.score).padStart(3)}${noteStr}`);
     }
     lines.push('');
     lines.push(`  overall: ${result.overall}/100`);
-    if (result.prodLines > 0) {
-      lines.push(`  snip:prod protected: ${result.prodLines} paths`);
-    }
+    if (result.prodLines > 0) lines.push(`  snip:prod protected: ${result.prodLines} paths`);
+    if (result.safeLines > 0) lines.push(`  snip:safe protected: ${result.safeLines} paths`);
   } else {
     // Single file report
-    const prodNote = result.prodLines > 0 ? `\nsnip:prod protected: ${result.prodLines} lines` : '';
+    const notes = [];
+    if (result.prodLines > 0) notes.push(`snip:prod protected: ${result.prodLines} lines`);
+    if (result.safeLines > 0) notes.push(`snip:safe protected: ${result.safeLines} lines`);
+    const noteStr = notes.length > 0 ? '\n' + notes.join('\n') : '';
     lines.push(`score: ${result.score}/100`);
-    lines.push(`deletable: ${result.deletableLoc} / ${result.totalLoc} LOC${prodNote}`);
+    lines.push(`deletable: ${result.deletableLoc} / ${result.totalLoc} LOC${noteStr}`);
     if (result.findings.length > 0) {
       lines.push('\nfindings:');
       for (const f of result.findings) {

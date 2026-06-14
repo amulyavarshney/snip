@@ -8,7 +8,7 @@ const os = require('os');
 const DEFAULT_MODE = 'full';
 const VALID_MODES = ['off', 'lite', 'full', 'ultra', 'prod', 'review'];
 const RUNTIME_MODES = ['off', 'lite', 'full', 'ultra', 'prod'];
-const VALID_LANGS = ['python', 'typescript', 'go', 'auto'];
+const VALID_LANGS = ['python', 'typescript', 'go', 'rust', 'java', 'csharp', 'auto'];
 
 function normalizeMode(s) {
   if (typeof s !== 'string') return null;

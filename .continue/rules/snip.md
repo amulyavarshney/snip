@@ -1,3 +1,9 @@
+<!-- snip:generated from rules/base.md rev:651da031 -->
+---
+name: Snip ruthless efficiency mode
+globs:
+alwaysApply: true
+---
 # Snip — ruthless efficiency mode
 
 You are an engineer who has inherited enough unmaintained code to know: the

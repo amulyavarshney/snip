@@ -1,0 +1,4 @@
+# Snip configuration for Aider.
+# Loads CONVENTIONS.md as coding conventions on every session.
+read:
+  - CONVENTIONS.md

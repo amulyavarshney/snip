@@ -60,6 +60,20 @@ test('scoreFile: snip:prod lines excluded from score', () => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+test('scoreFile: snip:safe lines excluded from score', () => {
+  const { file, dir } = tmpFile('setup.js', [
+    '// snip:safe — shared fixture used by all auth tests',
+    'const testDb = createTestDatabase();',
+    'const user = createTestUser(testDb);',
+    'const x = 1;',
+  ].join('\n'));
+
+  const result = scoreFile(file);
+  assert.equal(result.safeLines, 1, 'one snip:safe line counted');
+  assert.equal(result.totalLoc, 3, 'safe line excluded from totalLoc');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 test('scoreFile: RetryPolicy class counts as deletable', () => {
   const { file, dir } = tmpFile('retry.ts', [
     'class ExponentialBackoffPolicy {',
@@ -107,9 +121,36 @@ test('formatReport: single file report includes score', () => {
   assert.ok(report.includes('snip:prod'), 'prod lines mentioned');
 });
 
+test('scoreFile: new patterns — builder, DTO, singleton detected', () => {
+  const { file, dir } = tmpFile('bloat2.ts', [
+    'class UserBuilder { build() {} }',
+    'class OrderDto { id: number; }',
+    'static getInstance() { return this.instance; }',
+  ].join('\n'));
+
+  const result = scoreFile(file);
+  assert.ok(result.deletableLoc >= 2, 'builder and dto detected');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('getOverlayText: returns content for new languages', () => {
+  const { getOverlayText } = require(path.join(__dirname, '..', 'hooks', 'snip-instructions'));
+  const rust = getOverlayText('rust');
+  assert.ok(rust !== null, 'rust overlay exists');
+  assert.ok(rust.includes('Language idioms: Rust'), 'rust overlay header');
+
+  const java = getOverlayText('java');
+  assert.ok(java !== null, 'java overlay exists');
+  assert.ok(java.includes('Language idioms: Java'), 'java overlay header');
+
+  const cs = getOverlayText('csharp');
+  assert.ok(cs !== null, 'csharp overlay exists');
+  assert.ok(cs.includes('Language idioms: C#'), 'csharp overlay header');
+});
+
 test('PATTERNS exported and non-empty', () => {
   assert.ok(Array.isArray(PATTERNS), 'PATTERNS is an array');
-  assert.ok(PATTERNS.length > 0, 'PATTERNS has entries');
+  assert.ok(PATTERNS.length >= 20, 'PATTERNS has at least 20 entries after enhancements');
   for (const p of PATTERNS) {
     assert.ok(typeof p.name === 'string', 'pattern has name');
     assert.ok(typeof p.test === 'function', 'pattern has test function');

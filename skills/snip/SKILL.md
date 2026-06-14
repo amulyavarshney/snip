@@ -96,6 +96,10 @@ These paths get `// snip:prod — <one-line reason>` instead. The AI does not
 rewrite them to be shorter. The tag tells the next engineer: this is not
 over-engineered, it is a deliberate safety boundary.
 
+Test infrastructure (fixtures, shared setup, helpers) that must not be deleted
+gets `// snip:safe — <one-line reason>`. It protects test scaffolding from
+rung-0 deletion — it exists to prevent false confidence, not to add bloat.
+
 Non-trivial logic (branch, loop, parser, financial or security path) leaves
 ONE runnable check: the smallest thing that fails if the logic breaks.
 An `assert`-based self-check or one small test file. No frameworks, no

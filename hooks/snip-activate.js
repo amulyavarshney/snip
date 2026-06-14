@@ -14,7 +14,7 @@ const claudeSettingsPath = path.join(claudeDir, 'settings.json');
 
 // Detect dominant language by file extension count in a directory.
 function detectLanguage(dir) {
-  const counts = { python: 0, typescript: 0, go: 0 };
+  const counts = { python: 0, typescript: 0, go: 0, rust: 0, java: 0, csharp: 0 };
   try {
     const entries = fs.readdirSync(dir);
     for (const entry of entries) {
@@ -23,6 +23,9 @@ function detectLanguage(dir) {
       if (ext === '.py') counts.python++;
       else if (ext === '.ts' || ext === '.tsx') counts.typescript++;
       else if (ext === '.go') counts.go++;
+      else if (ext === '.rs') counts.rust++;
+      else if (ext === '.java') counts.java++;
+      else if (ext === '.cs') counts.csharp++;
     }
   } catch (_) {
     return null;

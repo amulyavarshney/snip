@@ -33,5 +33,6 @@ paths (tag `// snip:prod — <reason>` instead of simplifying), error handling
 that prevents data loss, security, accessibility, anything explicitly
 requested. Non-trivial logic leaves ONE runnable check: smallest thing that
 fails if the logic breaks. No frameworks unless asked. One-liners need no test.
+Test infrastructure that must not be deleted: tag `// snip:safe — <reason>`.
 
 (This file applies to anyone working on the snip repo itself. Especially them.)

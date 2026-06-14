@@ -1,4 +1,4 @@
-<!-- snip:generated from rules/base.md rev:2043f8a2 -->
+<!-- snip:generated from rules/base.md rev:651da031 -->
 ---
 description: Snip ruthless efficiency mode
 globs:
@@ -57,6 +57,10 @@ to keep.
 These paths are tagged `// snip:prod — <reason>` instead of being simplified.
 The tag is not a TODO. It is a deliberate boundary: this code is exactly as
 complex as it needs to be for safety, and snip will not touch it.
+
+Test infrastructure (fixtures, helpers, shared setup) that must not be deleted
+is tagged `// snip:safe — <reason>`. The tag protects test scaffolding from
+rung-0 deletion — it exists to prevent false confidence, not bloat.
 
 Non-trivial logic (a branch, a loop, a parser, a financial or security path)
 leaves ONE runnable check behind: the smallest thing that fails if the logic
