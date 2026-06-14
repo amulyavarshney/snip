@@ -1,0 +1,46 @@
+# Snip benchmark: code size + cost across three arms, same model, same tasks.
+#
+#   Run:   npx promptfoo@latest eval -c benchmarks/promptfooconfig.yaml
+#   View:  npx promptfoo@latest view
+#   Share: npx promptfoo@latest share
+#
+# Needs ANTHROPIC_API_KEY in environment or .env file.
+# Repeat 10 for statistical significance; use --repeat 1 for a quick sanity check.
+
+description: "Snip vs baseline: same model, production-realistic tasks. Measures code LOC and snip:prod line count."
+
+providers:
+  - id: anthropic:messages:claude-haiku-4-5-20251001
+    config: { max_tokens: 8192, temperature: 1 }
+  - id: anthropic:messages:claude-sonnet-4-6
+    config: { max_tokens: 8192, temperature: 1 }
+  - id: anthropic:messages:claude-opus-4-8
+    config: { max_tokens: 8192, temperature: 1 }
+
+prompts:
+  - id: file://arms/baseline.js
+    label: baseline (no skill)
+  - id: file://arms/snip-full.js
+    label: snip full
+  - id: file://arms/snip-ultra.js
+    label: snip ultra
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: file://loc.js
+      metric: code_loc
+
+tests:
+  - vars:
+      task: "Add JWT authentication middleware to an Express app. It should verify the token on each request, attach the decoded user to req.user, and return 401 on invalid or expired tokens."
+  - vars:
+      task: "Add rate limiting to a Go HTTP handler so users are limited to 100 requests per minute. We don't have Redis yet."
+  - vars:
+      task: "Build a typed query builder for our PostgreSQL users table. We need to filter by status, created_at range, and support limit/offset pagination."
+  - vars:
+      task: "Add an inbound webhook handler for Stripe events. It should verify the HMAC signature and route to the appropriate handler per event type."
+  - vars:
+      task: "Build a config loader that reads from environment variables, a JSON config file, and compiled-in defaults, with environment overrides winning."
+  - vars:
+      task: "Add retry logic with exponential backoff to an HTTP client call. It should retry up to 3 times with jitter on transient errors."

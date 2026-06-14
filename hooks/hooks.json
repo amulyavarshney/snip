@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/snip-activate.js\"",
+            "commandWindows": "node \"%CLAUDE_PLUGIN_ROOT%\\hooks\\snip-activate.js\"",
+            "timeout": 5,
+            "statusMessage": "Loading snip mode..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/snip-mode-tracker.js\"",
+            "commandWindows": "node \"%CLAUDE_PLUGIN_ROOT%\\hooks\\snip-mode-tracker.js\"",
+            "timeout": 5,
+            "statusMessage": "Tracking snip mode..."
+          }
+        ]
+      }
+    ]
+  }
+}

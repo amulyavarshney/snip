@@ -1,0 +1,15 @@
+description = "Review code for over-engineering: what to delete, replace, or shrink"
+prompt = """
+Review this code for unnecessary complexity. One finding per line:
+<location>: <tag> <what to cut>. <replacement>. <upgrade trigger if any>.
+
+Tags: delete (dead code), stdlib (hand-rolled thing stdlib ships), native
+(platform feature unused), yagni (abstraction with one caller), shrink (same
+logic, fewer lines), prod-ok (snip:prod path — correctly complex, leave it).
+
+End with: net: -N lines possible
+If nothing to cut: Lean already. Ship.
+
+Correctness bugs, security issues, and performance problems belong in a
+separate review pass — this pass is complexity only.
+"""

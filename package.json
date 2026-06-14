@@ -1,0 +1,56 @@
+{
+  "name": "snip",
+  "version": "0.1.0",
+  "description": "Ruthless efficiency mode for AI coding agents. Delete first. Build last.",
+  "keywords": ["yagni", "minimalism", "ai-coding", "agent-skill", "code-review", "snip"],
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "./hooks/snip-instructions.js",
+  "bin": {
+    "snip": "./cli/snip.js"
+  },
+  "exports": {
+    ".": "./hooks/snip-instructions.js",
+    "./config": "./hooks/snip-config.js",
+    "./runtime": "./hooks/snip-runtime.js",
+    "./score": "./score/snip-score.js"
+  },
+  "files": [
+    "cli/",
+    "hooks/",
+    "rules/",
+    "skills/",
+    "commands/",
+    "score/",
+    ".claude-plugin/",
+    ".cursor/",
+    ".windsurf/",
+    ".github/copilot-instructions.md",
+    ".clinerules/",
+    "scripts/",
+    "AGENTS.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.js && node scripts/check-rule-copies.js",
+    "test:instructions": "node --test tests/instructions.test.js",
+    "test:config": "node --test tests/config.test.js",
+    "test:hooks": "node --test tests/hooks.test.js",
+    "test:score": "node --test tests/score.test.js",
+    "test:cli": "node --test tests/cli.test.js",
+    "sync": "node scripts/check-rule-copies.js --fix",
+    "bench": "npx promptfoo@latest eval -c benchmarks/promptfooconfig.yaml",
+    "bench:view": "npx promptfoo@latest view",
+    "bench:share": "npx promptfoo@latest share",
+    "prepublishOnly": "npm test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/avarshney2/snip.git"
+  },
+  "homepage": "https://github.com/avarshney2/snip"
+}

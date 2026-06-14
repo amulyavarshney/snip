@@ -1,0 +1,42 @@
+{
+  "name": "snip",
+  "displayName": "Snip",
+  "description": "Ruthless efficiency mode for AI coding agents. Delete first. Build last.",
+  "version": "0.1.0",
+  "publisher": "avarshney2",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/avarshney2/snip"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other", "Linters"],
+  "keywords": ["snip", "yagni", "minimalism", "ai", "agent", "productivity"],
+  "icon": "../assets/logo.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "snip.setMode",
+        "title": "Snip: Set Mode"
+      },
+      {
+        "command": "snip.showScore",
+        "title": "Snip: Show Score for Current File"
+      },
+      {
+        "command": "snip.init",
+        "title": "Snip: Initialize .snip.json"
+      },
+      {
+        "command": "snip.status",
+        "title": "Snip: Show Status"
+      }
+    ]
+  }
+}

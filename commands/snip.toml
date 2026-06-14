@@ -1,0 +1,15 @@
+description = "Switch snip intensity level or language overlay"
+prompt = """
+Switch to snip {{args}} mode. If no level specified, use full.
+
+Snip is ruthless efficiency mode. Before any code: can it be deleted entirely?
+Does it need to exist at all (YAGNI)? Does the stdlib do it? A native platform
+feature? Can it be one line? Only then: the minimum that works.
+
+Auth, money, and security paths are tagged // snip:prod — <reason>, never
+simplified away. Mark other intentional simplifications // snip: <what, ceiling,
+upgrade path>.
+
+No unrequested abstractions, no avoidable dependencies, no boilerplate.
+Ship lean and name the escalation trigger in the same response.
+"""

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>snip — ruthless efficiency mode for AI agents</title>
+  <meta name="description" content="snip enforces a 7-rung deletion ladder on AI coding agents. Delete first. Build last. Protects auth and payment paths with snip:prod.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <span class="nav-brand">✂ snip</span>
+    <div class="nav-links">
+      <a href="#install">Install</a>
+      <a href="#prod">snip:prod</a>
+      <a href="#team">Teams</a>
+      <a href="https://github.com/avarshney2/snip">GitHub</a>
+      <a href="https://npmjs.com/package/snip">npm</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <h1>✂ snip</h1>
+      <p class="tagline">Delete first. Build last.</p>
+
+      <div class="demo-toggle">
+        <button class="demo-btn active" data-demo="before" data-group="main">without snip</button>
+        <button class="demo-btn" data-demo="after" data-group="main">with snip</button>
+      </div>
+
+      <div data-pane="before" data-group="main" class="demo-pane active">
+        <pre><code><span class="keyword">class</span> <span class="fn">EmailValidator</span> {
+  <span class="fn">constructor</span>(<span class="keyword">private</span> pattern = EMAIL_RE) {}
+
+  <span class="fn">validate</span>(email: <span class="keyword">string</span>): <span class="keyword">boolean</span> {
+    <span class="keyword">if</span> (<span class="keyword">typeof</span> email !== <span class="string">'string'</span>) <span class="keyword">throw new</span> <span class="fn">TypeError</span>(<span class="string">'must be string'</span>);
+    email = email.<span class="fn">trim</span>();
+    <span class="keyword">if</span> (!email) <span class="keyword">return false</span>;
+    <span class="keyword">return</span> <span class="keyword">this</span>.pattern.<span class="fn">test</span>(email);
+  }
+}
+
+<span class="keyword">function</span> <span class="fn">validateEmail</span>(email: <span class="keyword">string</span>) {
+  <span class="keyword">return new</span> <span class="fn">EmailValidator</span>().<span class="fn">validate</span>(email);  <span class="comment">// convenience wrapper</span>
+}</code></pre>
+      </div>
+
+      <div data-pane="after" data-group="main" class="demo-pane">
+        <pre><code><span class="snip-comment">// snip: good enough; real validation is sending the confirmation email</span>
+<span class="keyword">const</span> isValidEmail = (email: <span class="keyword">string</span>) => email.<span class="fn">includes</span>(<span class="string">'@'</span>) &amp;&amp; email.<span class="fn">includes</span>(<span class="string">'.'</span>);</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <div class="stat-banner">
+      <div class="stat-number">~80%</div>
+      <div class="stat-label">less code generated across 6 production-realistic benchmark tasks</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#475569">
+        Median of 10 runs · Claude Haiku, Sonnet, Opus · <a href="https://github.com/avarshney2/snip/tree/main/benchmarks">reproducible methodology</a>
+      </div>
+    </div>
+
+    <!-- snip:prod callout -->
+    <div class="prod-callout" id="prod">
+      <h3>// snip:prod — we protect your auth code</h3>
+      <p>
+        No other AI coding tool distinguishes "code that should be simpler" from
+        "code that must not be simplified." <code>snip:prod</code> is that distinction.
+      </p>
+      <pre><code><span class="snip-comment">// snip: plain object dispatch; upgrade to class registry if handlers exceed 10</span>
+<span class="keyword">const</span> handlers = { <span class="string">'order.created'</span>: handleOrder, <span class="string">'user.signup'</span>: handleSignup };
+(handlers[event.type] ?? noop)(event);
+
+<span class="prod-comment">// snip:prod — HMAC verification is a timing-attack boundary; do not simplify</span>
+<span class="keyword">const</span> sig = <span class="fn">Buffer.from</span>(req.headers[<span class="string">'x-signature'</span>], <span class="string">'hex'</span>);
+<span class="keyword">const</span> expected = <span class="fn">createHmac</span>(<span class="string">'sha256'</span>, secret).<span class="fn">update</span>(req.rawBody).<span class="fn">digest</span>();
+<span class="keyword">if</span> (!<span class="fn">timingSafeEqual</span>(sig, expected)) <span class="keyword">return</span> res.<span class="fn">status</span>(401).<span class="fn">end</span>();</code></pre>
+      <p style="margin-top:16px;margin-bottom:0">
+        Both are minimal. One is safe to shrink further. One is not.
+        <strong style="color:#e2e8f0">snip tells you which is which.</strong>
+      </p>
+    </div>
+
+    <!-- Install -->
+    <section id="install">
+      <h2>Install</h2>
+      <div class="install-tabs">
+        <div class="tab-nav">
+          <button class="tab-btn active" data-tab="claude" data-group="install">Claude Code</button>
+          <button class="tab-btn" data-tab="cursor" data-group="install">Cursor / Windsurf</button>
+          <button class="tab-btn" data-tab="vscode" data-group="install">VS Code</button>
+          <button class="tab-btn" data-tab="copilot" data-group="install">Copilot</button>
+        </div>
+        <div class="tab-content">
+          <div data-tabpane="claude" data-group="install" class="tab-pane active">
+            <button class="copy-btn">copy</button>
+            <pre><code>/plugin install snip</code></pre>
+            <p style="color:#64748b;font-size:0.85rem;margin-top:12px">
+              Then use <code>/snip</code>, <code>/snip ultra</code>, or <code>/snip prod</code> in any session.
+            </p>
+          </div>
+          <div data-tabpane="cursor" data-group="install" class="tab-pane">
+            <button class="copy-btn">copy</button>
+            <pre><code>curl -o .cursor/rules/snip.mdc \
+  https://raw.githubusercontent.com/avarshney2/snip/main/.cursor/rules/snip.mdc</code></pre>
+          </div>
+          <div data-tabpane="vscode" data-group="install" class="tab-pane">
+            <button class="copy-btn">copy</button>
+            <pre><code>code --install-extension avarshney2.snip</code></pre>
+            <p style="color:#64748b;font-size:0.85rem;margin-top:12px">
+              Or search "Snip" in the VS Code Extension Marketplace. Adds a status bar badge and <code>Snip: Set Mode</code> command.
+            </p>
+          </div>
+          <div data-tabpane="copilot" data-group="install" class="tab-pane">
+            <button class="copy-btn">copy</button>
+            <pre><code>curl -o .github/copilot-instructions.md \
+  https://raw.githubusercontent.com/avarshney2/snip/main/.github/copilot-instructions.md</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Team config -->
+    <section id="team">
+      <h2>Team config</h2>
+      <p>
+        Commit a <code>.snip.json</code> to your repo. Every developer and CI run
+        picks it up automatically. One engineer sets the floor, the whole team keeps it.
+      </p>
+      <pre><code>{
+  <span class="string">"mode"</span>: <span class="string">"full"</span>,
+  <span class="string">"language"</span>: <span class="string">"auto"</span>,
+  <span class="string">"prod"</span>: { <span class="string">"protect"</span>: [<span class="string">"auth"</span>, <span class="string">"payments"</span>, <span class="string">"billing"</span>] },
+  <span class="string">"score"</span>: { <span class="string">"minScore"</span>: 60, <span class="string">"failBelow"</span>: <span class="keyword">true</span> }
+}</code></pre>
+      <p>Add to CI to enforce the score floor on every PR:</p>
+      <pre><code><span class="comment"># .github/workflows/snip.yml</span>
+- run: npx snip score src/ --min-score 60 --fail-below</code></pre>
+    </section>
+
+    <!-- Language overlays -->
+    <section>
+      <h2>Language overlays</h2>
+      <p>
+        Snip auto-detects your project language and appends idiomatic shortcuts
+        on top of the base rules.
+      </p>
+      <div class="lang-tabs">
+        <div class="tab-nav">
+          <button class="tab-btn active" data-tab="py" data-group="lang">Python</button>
+          <button class="tab-btn" data-tab="ts" data-group="lang">TypeScript</button>
+          <button class="tab-btn" data-tab="go" data-group="lang">Go</button>
+        </div>
+        <div class="tab-content">
+          <div data-tabpane="py" data-group="lang" class="tab-pane active">
+            <pre><code><span class="snip-comment"># snip: lru_cache covers this; upgrade to Redis if cross-process needed</span>
+<span class="keyword">from</span> functools <span class="keyword">import</span> lru_cache
+
+<span class="snip-comment"># snip: dataclass replaces manual __init__ + __repr__ + __eq__</span>
+<span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass
+
+<span class="snip-comment"># snip: Counter replaces manual dict accumulation</span>
+<span class="keyword">from</span> collections <span class="keyword">import</span> Counter</code></pre>
+          </div>
+          <div data-tabpane="ts" data-group="lang" class="tab-pane">
+            <pre><code><span class="snip-comment">// snip: discriminated union; upgrade to classes if shared methods exceed 3</span>
+<span class="keyword">type</span> <span class="fn">Result</span>&lt;T&gt; = { ok: <span class="keyword">true</span>; value: T } | { ok: <span class="keyword">false</span>; error: <span class="keyword">string</span> };
+
+<span class="snip-comment">// snip: as const map; upgrade to enum if declaration merging needed</span>
+<span class="keyword">const</span> STATUS = { pending: <span class="string">'pending'</span>, active: <span class="string">'active'</span> } <span class="keyword">as const</span>;
+
+<span class="snip-comment">// snip: crypto.randomUUID() covers this (Node 19+)</span>
+<span class="keyword">const</span> id = crypto.<span class="fn">randomUUID</span>();</code></pre>
+          </div>
+          <div data-tabpane="go" data-group="lang" class="tab-pane">
+            <pre><code><span class="snip-comment">// snip: errors.New; upgrade to typed struct if callers need errors.As fields</span>
+<span class="keyword">var</span> (
+    ErrNotFound  = errors.<span class="fn">New</span>(<span class="string">"user: not found"</span>)
+    ErrForbidden = errors.<span class="fn">New</span>(<span class="string">"user: permission denied"</span>)
+)
+
+<span class="snip-comment">// snip: fmt.Errorf %w wraps errors; no custom wrapper type needed</span>
+<span class="keyword">return</span> <span class="keyword">nil</span>, fmt.<span class="fn">Errorf</span>(<span class="string">"get user %d: %w"</span>, id, ErrNotFound)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="links">
+      <a href="https://github.com/avarshney2/snip">GitHub</a>
+      <a href="https://npmjs.com/package/snip">npm</a>
+      <a href="https://github.com/avarshney2/snip/tree/main/examples">Examples</a>
+      <a href="https://github.com/avarshney2/snip/tree/main/benchmarks">Benchmarks</a>
+    </div>
+    <div>MIT license · snip v0.1.0</div>
+  </div>
+</footer>
+
+<script src="demo.js"></script>
+</body>
+</html>
