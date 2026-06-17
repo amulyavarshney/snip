@@ -68,7 +68,7 @@ code --install-extension amulyavarshney.snip
 
 ### npm CLI
 ```bash
-npm install -g snip
+npm install -g @amulyavarshney/snip
 snip init       # create .snip.json in current project
 snip score src/ # score your codebase
 ```
@@ -161,7 +161,7 @@ Commit `.snip.json` to your repo. Every developer and CI run picks it up automat
 ```yaml
 # .github/workflows/snip.yml
 - name: Check snip score
-  run: npx snip score src/ --min-score 60 --fail-below
+  run: npx @amulyavarshney/snip score src/ --min-score 60 --fail-below
 ```
 
 The snip score (0–100) measures how much of your codebase could be deleted or replaced with stdlib. `snip:prod` lines are excluded — they're correctly complex.

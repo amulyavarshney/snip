@@ -7,14 +7,14 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/avarshney2/snip"
+    "url": "https://github.com/amulyavarshney/snip"
   },
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": ["Other", "Linters"],
   "keywords": ["snip", "yagni", "minimalism", "ai", "agent", "productivity"],
-  "icon": "../assets/logo.png",
+  "icon": "logo.png",
   "activationEvents": [
     "onStartupFinished"
   ],

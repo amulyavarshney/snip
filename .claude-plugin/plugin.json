@@ -12,21 +12,5 @@
   "keywords": ["yagni", "minimalism", "code-review", "productivity", "snip"],
   "skills": "./skills/",
   "hooks": "./hooks/hooks.json",
-  "commands": "./commands/",
-  "interface": {
-    "displayName": "Snip",
-    "shortDescription": "Delete first. Build last.",
-    "longDescription": "Snip enforces a 7-rung deletion ladder starting with the question 'can this be deleted entirely?'. Language-specific overlays for Python, TypeScript, and Go. Production-safety mode tags auth/money/security paths with snip:prod instead of simplifying them away. CI-trackable snip score metric.",
-    "developerName": "Amulya Varshney",
-    "category": "Productivity",
-    "capabilities": ["Instructions", "Lifecycle hooks", "Commands"],
-    "websiteURL": "https://github.com/amulyavarshney/snip",
-    "defaultPrompt": [
-      "Use snip mode for this task.",
-      "Review this diff — what can be deleted?",
-      "Find the smallest implementation that works."
-    ],
-    "brandColor": "#0f172a",
-    "logo": "./assets/logo.png"
-  }
+  "commands": "./commands/"
 }

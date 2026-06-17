@@ -112,6 +112,6 @@ Set `"score": { "minScore": 60, "failBelow": true }` in `.snip.json` for CI.
 **Cursor / Windsurf:** copy `.cursor/rules/snip.mdc` to your project rules
 **GitHub Copilot:** copy `.github/copilot-instructions.md`
 **VS Code extension:** install "Snip" from the marketplace
-**npm:** `npm install -g snip` for the CLI
+**npm:** `npm install -g @amulyavarshney/snip` for the CLI
 
 GitHub: https://github.com/[author]/snip
