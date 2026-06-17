@@ -45,25 +45,25 @@ Both are minimal. One is safe to shrink further. One is not. `snip` tells you wh
 ### Cursor
 ```bash
 curl -o .cursor/rules/snip.mdc \
-  https://raw.githubusercontent.com/avarshney2/snip/main/.cursor/rules/snip.mdc
+  https://raw.githubusercontent.com/amulyavarshney/snip/main/.cursor/rules/snip.mdc
 ```
 
 ### Windsurf
 ```bash
 curl -o .windsurf/rules/snip.md \
-  https://raw.githubusercontent.com/avarshney2/snip/main/.windsurf/rules/snip.md
+  https://raw.githubusercontent.com/amulyavarshney/snip/main/.windsurf/rules/snip.md
 ```
 
 ### GitHub Copilot
 ```bash
 curl -o .github/copilot-instructions.md \
-  https://raw.githubusercontent.com/avarshney2/snip/main/.github/copilot-instructions.md
+  https://raw.githubusercontent.com/amulyavarshney/snip/main/.github/copilot-instructions.md
 ```
 
 ### VS Code Extension
 Search **"Snip"** in the VS Code Extension Marketplace, or:
 ```bash
-code --install-extension avarshney2.snip
+code --install-extension amulyavarshney.snip
 ```
 
 ### npm CLI

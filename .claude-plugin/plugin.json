@@ -4,10 +4,10 @@
   "description": "Ruthless efficiency mode. Challenges code existence before writing a line. 7-rung ladder: delete entirely → YAGNI → stdlib → native → installed dep → one-liner → minimum. Protects auth/money paths with snip:prod annotations.",
   "author": {
     "name": "Amulya Varshney",
-    "url": "https://github.com/avarshney2"
+    "url": "https://github.com/amulyavarshney"
   },
-  "homepage": "https://github.com/avarshney2/snip",
-  "repository": "https://github.com/avarshney2/snip",
+  "homepage": "https://github.com/amulyavarshney/snip",
+  "repository": "https://github.com/amulyavarshney/snip",
   "license": "MIT",
   "keywords": ["yagni", "minimalism", "code-review", "productivity", "snip"],
   "skills": "./skills/",
@@ -20,7 +20,7 @@
     "developerName": "Amulya Varshney",
     "category": "Productivity",
     "capabilities": ["Instructions", "Lifecycle hooks", "Commands"],
-    "websiteURL": "https://github.com/avarshney2/snip",
+    "websiteURL": "https://github.com/amulyavarshney/snip",
     "defaultPrompt": [
       "Use snip mode for this task.",
       "Review this diff — what can be deleted?",
