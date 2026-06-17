@@ -60,12 +60,6 @@ curl -o .github/copilot-instructions.md \
   https://raw.githubusercontent.com/amulyavarshney/snip/main/.github/copilot-instructions.md
 ```
 
-### VS Code Extension
-Search **"Snip"** in the VS Code Extension Marketplace, or:
-```bash
-code --install-extension amulyavarshney.snip
-```
-
 ### npm CLI
 ```bash
 npm install -g @amulyavarshney/snip
