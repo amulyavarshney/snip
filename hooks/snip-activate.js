@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const { getConfig } = require('./snip-config');
+const { getConfig, VALID_LANGS } = require('./snip-config');
 const { getSnipInstructions } = require('./snip-instructions');
 const { clearState, isCodex, setModeAndLang, writeHookOutput } = require('./snip-runtime');
 
@@ -49,7 +49,7 @@ function resolveLanguage(config) {
   let resolved = null;
   if (language === 'auto') {
     resolved = detectLanguage(process.cwd());
-  } else if (['python', 'typescript', 'go'].includes(language)) {
+  } else if (VALID_LANGS.includes(language)) {
     resolved = language;
   }
 

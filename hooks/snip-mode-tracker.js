@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 'use strict';
 
-const { getDefaultMode, normalizeMode, normalizeConfigMode } = require('./snip-config');
+const { getDefaultMode, normalizeMode, normalizeConfigMode, VALID_LANGS } = require('./snip-config');
 const { clearState, readState, setModeAndLang, writeHookOutput } = require('./snip-runtime');
 
-const VALID_LANGS = ['python', 'typescript', 'go'];
 const DEACTIVATE_RE = /\b(stop snip|no snip|normal mode|disable snip)\b/i;
 const SNIP_CMD_RE = /^[/@$]snip(?::snip)?(?:-review|(?:\s+.*)?)$/i;
 
