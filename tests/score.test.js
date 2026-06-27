@@ -167,6 +167,25 @@ test('scorePaths: empty list returns overall 100', () => {
   assert.equal(result.files.length, 0);
 });
 
+test('scoreFile: function-level patterns detected', () => {
+  const { file, dir } = tmpFile('func-bloat.js', [
+    'function doThing(a, b, c, d, e) { return a; }',           // too-many-params
+    'const fn = (x, y, z, w, v) => x;',                        // too-many-params (arrow)
+    'const p = new Promise(function(resolve, reject) {});',     // unnecessary-promise-constructor
+    'this.handler = this.handler.bind(this);',                  // explicit-bind
+    'function memoizeResult(fn) { const cache = {}; }',        // hand-rolled-memoize
+  ].join('\n'));
+
+  const result = scoreFile(file);
+  assert.ok(result.deletableLoc >= 4, `expected >=4 deletable, got ${result.deletableLoc}`);
+  const patterns = result.findings.map((f) => f.pattern);
+  assert.ok(patterns.includes('too-many-params'), 'too-many-params detected');
+  assert.ok(patterns.includes('unnecessary-promise-constructor'), 'promise-constructor detected');
+  assert.ok(patterns.includes('explicit-bind'), 'explicit-bind detected');
+  assert.ok(patterns.includes('hand-rolled-memoize'), 'hand-rolled-memoize detected');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 test('scoreDir: --json output shape is valid', () => {
   const { spawnSync } = require('child_process');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snip-score-json-'));
@@ -200,7 +219,7 @@ test('scoreFile: --json output shape is valid', () => {
 
 test('PATTERNS exported and non-empty', () => {
   assert.ok(Array.isArray(PATTERNS), 'PATTERNS is an array');
-  assert.ok(PATTERNS.length >= 20, 'PATTERNS has at least 20 entries after enhancements');
+  assert.ok(PATTERNS.length >= 26, 'PATTERNS has at least 26 entries after enhancements');
   for (const p of PATTERNS) {
     assert.ok(typeof p.name === 'string', 'pattern has name');
     assert.ok(typeof p.test === 'function', 'pattern has test function');

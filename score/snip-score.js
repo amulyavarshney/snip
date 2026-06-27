@@ -52,6 +52,25 @@ const PATTERNS = [
   { name: 'singleton-pattern', test: (l) => /static\s+\w*getInstance\w*\s*\(/.test(l) },
   // Abstract factory with one concrete factory
   { name: 'abstract-factory', test: (l) => /class\s+\w+(AbstractFactory|FactoryBase|BaseFactory)\b/.test(l) },
+
+  // ── Function-level patterns ───────────────────────────────────────────────
+
+  // Functions with 5+ positional parameters — a plain object arg is almost always cleaner
+  { name: 'too-many-params', test: (l) => {
+    const m = l.match(/function\s+\w*\s*\(([^)]*)\)|(?:const|let|var)\s+\w+\s*=\s*(?:async\s*)?\(([^)]*)\)\s*=>/);
+    if (!m) return false;
+    const params = (m[1] || m[2] || '').trim();
+    if (!params) return false;
+    return params.split(',').filter(Boolean).length >= 5;
+  }},
+  // new Promise() wrapping an already-async/promise-returning call (promisification smell)
+  { name: 'unnecessary-promise-constructor', test: (l) => /new\s+Promise\s*\(\s*(async\s*)?(function|\()/.test(l) },
+  // Explicit .bind(this) — almost always replaced by an arrow function
+  { name: 'explicit-bind', test: (l) => /\.\s*bind\s*\(\s*this\s*\)/.test(l) },
+  // Hand-rolled memoize function declaration (lodash _.memoize / native Map covers this)
+  { name: 'hand-rolled-memoize', test: (l) => /function\s+\w*memoize\w*\s*\(/i.test(l) },
+  // Explicit callback-style wrappers: function(err, result) { if (err) reject... }
+  { name: 'callback-to-promise-wrapper', test: (l) => /function\s*\(\s*\w*[Ee]rr\w*\s*,\s*\w+\s*\)\s*\{/.test(l) && /reject|resolve/.test(l) },
 ];
 
 // Count non-blank, non-comment lines in a text block.
