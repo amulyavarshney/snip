@@ -10,11 +10,12 @@ const { spawnSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 
-function run(scriptName, env, stdin = '') {
+function run(scriptName, env, stdin = '', cwd = process.cwd()) {
   return spawnSync(process.execPath, [path.join(ROOT, 'hooks', scriptName)], {
     env: { ...process.env, ...env },
     input: stdin,
     encoding: 'utf8',
+    cwd,
   });
 }
 
@@ -127,6 +128,32 @@ test('Codex: mode-tracker "no snip" clears state', () => {
   assert.ok(!fs.existsSync(path.join(pluginData, '.snip-active')), 'state cleared');
   const output = JSON.parse(result.stdout);
   assert.equal(output.systemMessage, 'SNIP:OFF');
+
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('Codex: activate detects language from nested src/ directory', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'snip-hooks-'));
+  const pluginData = path.join(tmp, 'plugin-data');
+  const home = path.join(tmp, 'home');
+  const project = path.join(tmp, 'project');
+  const srcDir = path.join(project, 'src');
+  fs.mkdirSync(pluginData, { recursive: true });
+  fs.mkdirSync(home, { recursive: true });
+  fs.mkdirSync(srcDir, { recursive: true });
+
+  // No .rs files at root; all Rust files are nested inside src/
+  for (let i = 0; i < 5; i++) fs.writeFileSync(path.join(srcDir, `lib${i}.rs`), '');
+
+  const result = run('snip-activate.js', {
+    HOME: home, USERPROFILE: home,
+    PLUGIN_DATA: pluginData,
+    SNIP_DEFAULT_MODE: 'full',
+  }, '', project);
+
+  assert.equal(result.status, 0, result.stderr);
+  const lines = fs.readFileSync(path.join(pluginData, '.snip-active'), 'utf8').split('\n');
+  assert.equal(lines[1], 'rust', 'rust detected from nested src/ directory');
 
   fs.rmSync(tmp, { recursive: true, force: true });
 });

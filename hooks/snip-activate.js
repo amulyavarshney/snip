@@ -12,29 +12,38 @@ const { clearState, isCodex, setModeAndLang, writeHookOutput } = require('./snip
 const claudeDir = path.join(os.homedir(), '.claude');
 const claudeSettingsPath = path.join(claudeDir, 'settings.json');
 
-// Detect dominant language by file extension count in a directory.
-function detectLanguage(dir) {
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'out', 'target', '__pycache__', '.venv', 'vendor']);
+
+// Detect dominant language by file extension count, scanning recursively up to maxDepth.
+function detectLanguage(dir, maxDepth = 3) {
   const counts = { python: 0, typescript: 0, go: 0, rust: 0, java: 0, csharp: 0 };
-  try {
-    const entries = fs.readdirSync(dir);
+
+  function scan(current, depth) {
+    if (depth > maxDepth) return;
+    let entries;
+    try { entries = fs.readdirSync(current, { withFileTypes: true }); } catch (_) { return; }
     for (const entry of entries) {
-      if (entry.startsWith('.') || entry === 'node_modules') continue;
-      const ext = path.extname(entry).toLowerCase();
-      if (ext === '.py') counts.python++;
-      else if (ext === '.ts' || ext === '.tsx') counts.typescript++;
-      else if (ext === '.go') counts.go++;
-      else if (ext === '.rs') counts.rust++;
-      else if (ext === '.java') counts.java++;
-      else if (ext === '.cs') counts.csharp++;
+      if (entry.name.startsWith('.') || SKIP_DIRS.has(entry.name)) continue;
+      if (entry.isDirectory()) {
+        scan(path.join(current, entry.name), depth + 1);
+      } else if (entry.isFile()) {
+        const ext = path.extname(entry.name).toLowerCase();
+        if (ext === '.py') counts.python++;
+        else if (ext === '.ts' || ext === '.tsx') counts.typescript++;
+        else if (ext === '.go') counts.go++;
+        else if (ext === '.rs') counts.rust++;
+        else if (ext === '.java') counts.java++;
+        else if (ext === '.cs') counts.csharp++;
+      }
     }
-  } catch (_) {
-    return null;
   }
+
+  scan(dir, 0);
 
   const max = Math.max(...Object.values(counts));
   if (max === 0) return null;
 
-  // Tie-break: prefer whichever appears first alphabetically for determinism.
+  // Tie-break: prefer whichever appears first in iteration order for determinism.
   for (const [lang, count] of Object.entries(counts)) {
     if (count === max) return lang;
   }
