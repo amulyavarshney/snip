@@ -148,6 +148,37 @@ test('getOverlayText: returns content for new languages', () => {
   assert.ok(cs.includes('Language idioms: C#'), 'csharp overlay header');
 });
 
+test('scoreDir: --json output shape is valid', () => {
+  const { spawnSync } = require('child_process');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snip-score-json-'));
+  fs.writeFileSync(path.join(dir, 'app.ts'), 'const x = 1;\nclass EmailValidator {}\n');
+
+  const result = spawnSync(process.execPath, [
+    path.join(__dirname, '..', 'score', 'snip-score.js'), dir, '--json',
+  ], { encoding: 'utf8' });
+
+  const json = JSON.parse(result.stdout);
+  assert.ok(typeof json.overall === 'number', 'overall is a number');
+  assert.ok(Array.isArray(json.files), 'files is an array');
+  assert.ok(Array.isArray(json.files[0].findings), 'findings is an array');
+  assert.ok('deletableLoc' in json.files[0], 'deletableLoc present');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('scoreFile: --json output shape is valid', () => {
+  const { spawnSync } = require('child_process');
+  const { file, dir } = tmpFile('single.ts', 'class EmailValidator {}\nconst x = 1;\n');
+
+  const result = spawnSync(process.execPath, [
+    path.join(__dirname, '..', 'score', 'snip-score.js'), file, '--json',
+  ], { encoding: 'utf8' });
+
+  const json = JSON.parse(result.stdout);
+  assert.ok(typeof json.score === 'number', 'score present');
+  assert.ok(Array.isArray(json.findings), 'findings is an array');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 test('PATTERNS exported and non-empty', () => {
   assert.ok(Array.isArray(PATTERNS), 'PATTERNS is an array');
   assert.ok(PATTERNS.length >= 20, 'PATTERNS has at least 20 entries after enhancements');

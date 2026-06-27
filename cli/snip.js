@@ -124,6 +124,67 @@ function cmdScore(args) {
   process.exit(result.status || 0);
 }
 
+function cmdDiff(args) {
+  const { scoreDir: _unused, scorePaths, formatReport } = require(path.join(ROOT, 'score', 'snip-score'));
+  const jsonOut = args.includes('--json');
+  const failBelow = args.includes('--fail-below');
+  const minScore = (() => {
+    const idx = args.indexOf('--min-score');
+    return idx !== -1 ? parseInt(args[idx + 1], 10) : null;
+  })();
+
+  // Collect changed files from git: staged + unstaged modifications and additions.
+  const gitResult = spawnSync('git', ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD'], {
+    encoding: 'utf8',
+    cwd: process.cwd(),
+  });
+
+  if (gitResult.status !== 0) {
+    console.error('snip diff: git diff failed — are you inside a git repo?');
+    process.exit(1);
+  }
+
+  const changedFiles = gitResult.stdout
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .map((f) => path.resolve(process.cwd(), f));
+
+  if (changedFiles.length === 0) {
+    console.log('snip diff: no changed files');
+    process.exit(0);
+  }
+
+  const result = scorePaths(changedFiles);
+
+  if (jsonOut) {
+    const out = {
+      overall: result.overall,
+      prodLines: result.prodLines,
+      safeLines: result.safeLines,
+      files: result.files
+        .filter((f) => f.score !== null)
+        .map((f) => ({
+          file: path.relative(process.cwd(), f.file),
+          score: f.score,
+          deletableLoc: f.deletableLoc,
+          totalLoc: f.totalLoc,
+          prodLines: f.prodLines,
+          safeLines: f.safeLines,
+          findings: f.findings,
+        })),
+    };
+    console.log(JSON.stringify(out, null, 2));
+  } else {
+    console.log(formatReport(result, { rootDir: process.cwd() }));
+  }
+
+  if (failBelow && minScore !== null && result.overall < minScore) {
+    if (!jsonOut) console.error(`\nFAIL: score ${result.overall} is below minimum ${minScore}`);
+    process.exit(1);
+  }
+}
+
 function cmdBench(args) {
   const configPath = path.join(ROOT, 'benchmarks', 'promptfooconfig.yaml');
   const result = spawnSync('npx', ['promptfoo@latest', 'eval', '-c', configPath, ...args], {
@@ -149,6 +210,7 @@ Usage:
   snip init                     Scaffold .snip.json in current dir
   snip sync                     Regenerate IDE rule copies from rules/base.md
   snip score [path]             Score a file or directory (0-100)
+  snip diff                     Score only git-changed files (vs HEAD)
   snip bench                    Run benchmark suite (needs ANTHROPIC_API_KEY)
 
 Modes: lite | full | ultra | prod | off
@@ -160,6 +222,9 @@ Examples:
   snip lang typescript
   snip score src/
   snip score src/ --min-score 60 --fail-below
+  snip diff
+  snip diff --min-score 60 --fail-below
+  snip diff --json
 `);
 }
 
@@ -176,6 +241,7 @@ function parseCliArgs(argv) {
     case 'mode':    return { command: 'mode', args: rest };
     case 'lang':    return { command: 'lang', args: rest };
     case 'score':   return { command: 'score', args: rest };
+    case 'diff':    return { command: 'diff', args: rest };
     case 'bench':   return { command: 'bench', args: rest };
     default:        return { command: 'help' };
   }
@@ -193,6 +259,7 @@ if (require.main === module) {
     case 'mode':    cmdMode(parsed.args); break;
     case 'lang':    cmdLang(parsed.args); break;
     case 'score':   cmdScore(parsed.args); break;
+    case 'diff':    cmdDiff(parsed.args); break;
     case 'bench':   cmdBench(parsed.args); break;
     default:        printHelp(); break;
   }

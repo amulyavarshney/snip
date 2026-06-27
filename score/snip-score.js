@@ -197,7 +197,23 @@ function formatReport(result, { rootDir = process.cwd() } = {}) {
   return lines.join('\n');
 }
 
-module.exports = { PATTERNS, scoreFile, scoreDir, formatReport };
+// Score an explicit list of file paths (used by snip diff).
+function scorePaths(filePaths, opts = {}) {
+  const { extensions = ['.js', '.ts', '.tsx', '.py', '.go', '.rs', '.java', '.cs'] } = opts;
+  const filtered = filePaths.filter((f) => extensions.includes(path.extname(f)));
+  const results = filtered.map((f) => ({ file: f, ...scoreFile(f) }));
+
+  const validResults = results.filter((r) => r.score !== null);
+  const totalDeletable = validResults.reduce((s, r) => s + r.deletableLoc, 0);
+  const totalLoc = validResults.reduce((s, r) => s + r.totalLoc, 0);
+  const totalProd = validResults.reduce((s, r) => s + r.prodLines, 0);
+  const totalSafe = validResults.reduce((s, r) => s + r.safeLines, 0);
+  const overall = totalLoc === 0 ? 100 : Math.round(100 - (100 * totalDeletable / totalLoc));
+
+  return { files: results, overall, prodLines: totalProd, safeLines: totalSafe };
+}
+
+module.exports = { PATTERNS, scoreFile, scoreDir, scorePaths, formatReport };
 
 // CLI entry when run directly
 if (require.main === module) {
@@ -207,9 +223,10 @@ if (require.main === module) {
     return idx !== -1 ? parseInt(process.argv[idx + 1], 10) : null;
   })();
   const failBelow = process.argv.includes('--fail-below');
+  const jsonOut = process.argv.includes('--json');
 
   if (args.length === 0) {
-    console.log('Usage: snip-score.js <file|dir> [--min-score N] [--fail-below]');
+    console.log('Usage: snip-score.js <file|dir> [--min-score N] [--fail-below] [--json]');
     process.exit(0);
   }
 
@@ -218,16 +235,40 @@ if (require.main === module) {
 
   if (stat.isDirectory()) {
     const result = scoreDir(target);
-    console.log(formatReport(result, { rootDir: target }));
+    if (jsonOut) {
+      const out = {
+        overall: result.overall,
+        prodLines: result.prodLines,
+        safeLines: result.safeLines,
+        files: result.files
+          .filter((f) => f.score !== null)
+          .map((f) => ({
+            file: path.relative(target, f.file),
+            score: f.score,
+            deletableLoc: f.deletableLoc,
+            totalLoc: f.totalLoc,
+            prodLines: f.prodLines,
+            safeLines: f.safeLines,
+            findings: f.findings,
+          })),
+      };
+      console.log(JSON.stringify(out, null, 2));
+    } else {
+      console.log(formatReport(result, { rootDir: target }));
+    }
     if (failBelow && minScore !== null && result.overall < minScore) {
-      console.error(`\nFAIL: score ${result.overall} is below minimum ${minScore}`);
+      if (!jsonOut) console.error(`\nFAIL: score ${result.overall} is below minimum ${minScore}`);
       process.exit(1);
     }
   } else {
     const result = scoreFile(target);
-    console.log(formatReport(result));
+    if (jsonOut) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      console.log(formatReport(result));
+    }
     if (failBelow && minScore !== null && result.score < minScore) {
-      console.error(`\nFAIL: score ${result.score} is below minimum ${minScore}`);
+      if (!jsonOut) console.error(`\nFAIL: score ${result.score} is below minimum ${minScore}`);
       process.exit(1);
     }
   }
