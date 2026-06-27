@@ -113,6 +113,12 @@ test('getFallbackInstructions: includes all 7 rungs', () => {
   }
 });
 
+test('filterSkillForMode: review mode returns empty string, not full content', () => {
+  const text = '| **full** | full row |\nSome rule text.';
+  const result = filterSkillForMode(text, 'review');
+  assert.equal(result, '', 'review mode yields empty string from filter');
+});
+
 test('getFallbackInstructions: includes trust boundaries clause', () => {
   const result = getFallbackInstructions('full', null);
   assert.ok(result.includes('trust boundaries') || result.includes('Trust boundaries'), 'trust boundaries present');

@@ -9,6 +9,7 @@ const OVERLAY_DIR = path.join(__dirname, '..', 'rules', 'overlays');
 
 const RUNTIME_MODES = new Set(['lite', 'full', 'ultra', 'prod']);
 const REVIEW_MODES = new Set(['review']);
+const ALL_MODES = new Set([...RUNTIME_MODES, ...REVIEW_MODES]);
 
 function normalizeMode(s) {
   if (typeof s !== 'string') return null;
@@ -17,6 +18,9 @@ function normalizeMode(s) {
 }
 
 function filterSkillForMode(text, mode) {
+  const normalized = typeof mode === 'string' ? mode.trim().toLowerCase() : null;
+  // review mode has no skill body to filter — callers should use getSnipInstructions instead
+  if (normalized && REVIEW_MODES.has(normalized)) return '';
   const effectiveMode = normalizeMode(mode) || 'full';
   const body = String(text || '').replace(/^---[\s\S]*?---\s*/, '');
 
@@ -93,7 +97,7 @@ function getSnipInstructions(mode, lang) {
   const effectiveMode = normalizeMode(mode) || 'full';
   const langNote = lang ? ` [${lang}]` : '';
 
-  if (REVIEW_MODES.has(mode && mode.trim().toLowerCase())) {
+  if (typeof mode === 'string' && REVIEW_MODES.has(mode.trim().toLowerCase())) {
     return `SNIP MODE ACTIVE — level: review${langNote}. Behavior defined by /snip-review skill.`;
   }
 
