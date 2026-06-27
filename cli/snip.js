@@ -125,7 +125,7 @@ function cmdScore(args) {
 }
 
 function cmdDiff(args) {
-  const { scoreDir: _unused, scorePaths, formatReport } = require(path.join(ROOT, 'score', 'snip-score'));
+  const { scorePaths, formatReport } = require(path.join(ROOT, 'score', 'snip-score'));
   const jsonOut = args.includes('--json');
   const failBelow = args.includes('--fail-below');
   const minScore = (() => {

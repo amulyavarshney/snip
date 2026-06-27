@@ -7,7 +7,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const { PATTERNS, scoreFile, scoreDir, formatReport } = require(
+const { PATTERNS, scoreFile, scoreDir, scorePaths, formatReport } = require(
   path.join(__dirname, '..', 'score', 'snip-score')
 );
 
@@ -146,6 +146,25 @@ test('getOverlayText: returns content for new languages', () => {
   const cs = getOverlayText('csharp');
   assert.ok(cs !== null, 'csharp overlay exists');
   assert.ok(cs.includes('Language idioms: C#'), 'csharp overlay header');
+});
+
+test('scorePaths: scores explicit file list, skips non-code files', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snip-paths-'));
+  const tsFile = path.join(dir, 'app.ts');
+  const mdFile = path.join(dir, 'README.md');
+  fs.writeFileSync(tsFile, 'const x = 1;\nclass EmailValidator {}\n');
+  fs.writeFileSync(mdFile, '# docs\n');
+
+  const result = scorePaths([tsFile, mdFile]);
+  assert.equal(result.files.length, 1, 'md file filtered out');
+  assert.ok(typeof result.overall === 'number', 'overall present');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('scorePaths: empty list returns overall 100', () => {
+  const result = scorePaths([]);
+  assert.equal(result.overall, 100);
+  assert.equal(result.files.length, 0);
 });
 
 test('scoreDir: --json output shape is valid', () => {

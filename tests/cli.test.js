@@ -72,3 +72,13 @@ test('parseCliArgs: unknown command returns help', () => {
   const result = parseCliArgs(['unknown-command']);
   assert.equal(result.command, 'help');
 });
+
+test('parseCliArgs: diff', () => {
+  assert.deepEqual(parseCliArgs(['diff']), { command: 'diff', args: [] });
+});
+
+test('parseCliArgs: diff with flags', () => {
+  const result = parseCliArgs(['diff', '--min-score', '70', '--fail-below']);
+  assert.equal(result.command, 'diff');
+  assert.deepEqual(result.args, ['--min-score', '70', '--fail-below']);
+});
