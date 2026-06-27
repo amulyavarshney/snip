@@ -219,7 +219,7 @@ test('scoreFile: --json output shape is valid', () => {
 
 test('PATTERNS exported and non-empty', () => {
   assert.ok(Array.isArray(PATTERNS), 'PATTERNS is an array');
-  assert.ok(PATTERNS.length >= 26, 'PATTERNS has at least 26 entries after enhancements');
+  assert.ok(PATTERNS.length >= 25, 'PATTERNS has at least 25 entries after enhancements');
   for (const p of PATTERNS) {
     assert.ok(typeof p.name === 'string', 'pattern has name');
     assert.ok(typeof p.test === 'function', 'pattern has test function');

@@ -35,7 +35,8 @@ function parseSnipCommand(prompt) {
   // /snip lang <language>
   if (sub === 'lang') {
     if (arg === 'none' || arg === '') return { type: 'set-lang', lang: null };
-    if (VALID_LANGS.includes(arg)) return { type: 'set-lang', lang: arg };
+    // 'auto' is a config sentinel for snip-activate, not a concrete language to store in state.
+    if (VALID_LANGS.includes(arg) && arg !== 'auto') return { type: 'set-lang', lang: arg };
     return { type: 'noop' };
   }
 

@@ -130,7 +130,9 @@ function cmdDiff(args) {
   const failBelow = args.includes('--fail-below');
   const minScore = (() => {
     const idx = args.indexOf('--min-score');
-    return idx !== -1 ? parseInt(args[idx + 1], 10) : null;
+    if (idx === -1) return null;
+    const val = parseInt(args[idx + 1], 10);
+    return Number.isNaN(val) ? null : val;
   })();
 
   // Collect changed files from git: staged + unstaged modifications and additions.

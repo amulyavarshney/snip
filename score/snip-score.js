@@ -69,8 +69,6 @@ const PATTERNS = [
   { name: 'explicit-bind', test: (l) => /\.\s*bind\s*\(\s*this\s*\)/.test(l) },
   // Hand-rolled memoize function declaration (lodash _.memoize / native Map covers this)
   { name: 'hand-rolled-memoize', test: (l) => /function\s+\w*memoize\w*\s*\(/i.test(l) },
-  // Explicit callback-style wrappers: function(err, result) { if (err) reject... }
-  { name: 'callback-to-promise-wrapper', test: (l) => /function\s*\(\s*\w*[Ee]rr\w*\s*,\s*\w+\s*\)\s*\{/.test(l) && /reject|resolve/.test(l) },
 ];
 
 // Count non-blank, non-comment lines in a text block.
@@ -239,7 +237,9 @@ if (require.main === module) {
   const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
   const minScore = (() => {
     const idx = process.argv.indexOf('--min-score');
-    return idx !== -1 ? parseInt(process.argv[idx + 1], 10) : null;
+    if (idx === -1) return null;
+    const val = parseInt(process.argv[idx + 1], 10);
+    return Number.isNaN(val) ? null : val;
   })();
   const failBelow = process.argv.includes('--fail-below');
   const jsonOut = process.argv.includes('--json');

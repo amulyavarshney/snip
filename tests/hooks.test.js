@@ -194,3 +194,24 @@ test('Claude Code: activate emits plain text (not JSON)', () => {
 
   fs.rmSync(tmp, { recursive: true, force: true });
 });
+
+// ── parseSnipCommand unit tests ───────────────────────────────────────────────
+
+const { parseSnipCommand } = require(path.join(ROOT, 'hooks', 'snip-mode-tracker'));
+
+test('parseSnipCommand: /snip lang auto returns noop (auto is not a storable language)', () => {
+  const result = parseSnipCommand('/snip lang auto');
+  assert.equal(result.type, 'noop', '/snip lang auto should be noop, not set-lang');
+});
+
+test('parseSnipCommand: /snip lang rust returns set-lang', () => {
+  const result = parseSnipCommand('/snip lang rust');
+  assert.equal(result.type, 'set-lang');
+  assert.equal(result.lang, 'rust');
+});
+
+test('parseSnipCommand: /snip lang none clears language', () => {
+  const result = parseSnipCommand('/snip lang none');
+  assert.equal(result.type, 'set-lang');
+  assert.equal(result.lang, null);
+});
