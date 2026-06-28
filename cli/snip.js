@@ -69,7 +69,7 @@ function cmdLang(args) {
   const isProject = args[0] === 'project';
   const lang = isProject ? args[1] : args[0];
   const { VALID_LANGS, writeUserConfig } = loadConfig();
-  const validWithNone = [...VALID_LANGS, 'none', 'auto'];
+  const validWithNone = [...VALID_LANGS, 'none'];
 
   if (!lang || !validWithNone.includes(lang)) {
     console.error(`Unknown language: ${lang || '(none)'}. Valid: ${validWithNone.join(', ')}`);
