@@ -165,15 +165,7 @@ function scoreDir(dirPath, opts = {}) {
 
   const files = collectFiles(dirPath);
   const results = files.map((f) => ({ file: f, ...scoreFile(f) }));
-
-  const validResults = results.filter((r) => r.score !== null);
-  const totalDeletable = validResults.reduce((s, r) => s + r.deletableLoc, 0);
-  const totalLoc = validResults.reduce((s, r) => s + r.totalLoc, 0);
-  const totalProd = validResults.reduce((s, r) => s + r.prodLines, 0);
-  const totalSafe = validResults.reduce((s, r) => s + r.safeLines, 0);
-  const overall = totalLoc === 0 ? 100 : Math.round(100 - (100 * totalDeletable / totalLoc));
-
-  return { files: results, overall, prodLines: totalProd, safeLines: totalSafe };
+  return aggregateResults(results);
 }
 
 function formatReport(result, { rootDir = process.cwd() } = {}) {
@@ -214,20 +206,24 @@ function formatReport(result, { rootDir = process.cwd() } = {}) {
   return lines.join('\n');
 }
 
+function aggregateResults(results) {
+  const valid = results.filter((r) => r.score !== null);
+  const totalDeletable = valid.reduce((s, r) => s + r.deletableLoc, 0);
+  const totalLoc = valid.reduce((s, r) => s + r.totalLoc, 0);
+  const overall = totalLoc === 0 ? 100 : Math.round(100 - (100 * totalDeletable / totalLoc));
+  return {
+    files: results,
+    overall,
+    prodLines: valid.reduce((s, r) => s + r.prodLines, 0),
+    safeLines: valid.reduce((s, r) => s + r.safeLines, 0),
+  };
+}
+
 // Score an explicit list of file paths (used by snip diff).
 function scorePaths(filePaths, opts = {}) {
   const { extensions = ['.js', '.ts', '.tsx', '.py', '.go', '.rs', '.java', '.cs'] } = opts;
   const filtered = filePaths.filter((f) => extensions.includes(path.extname(f)));
-  const results = filtered.map((f) => ({ file: f, ...scoreFile(f) }));
-
-  const validResults = results.filter((r) => r.score !== null);
-  const totalDeletable = validResults.reduce((s, r) => s + r.deletableLoc, 0);
-  const totalLoc = validResults.reduce((s, r) => s + r.totalLoc, 0);
-  const totalProd = validResults.reduce((s, r) => s + r.prodLines, 0);
-  const totalSafe = validResults.reduce((s, r) => s + r.safeLines, 0);
-  const overall = totalLoc === 0 ? 100 : Math.round(100 - (100 * totalDeletable / totalLoc));
-
-  return { files: results, overall, prodLines: totalProd, safeLines: totalSafe };
+  return aggregateResults(filtered.map((f) => ({ file: f, ...scoreFile(f) })));
 }
 
 module.exports = { PATTERNS, scoreFile, scoreDir, scorePaths, formatReport };
