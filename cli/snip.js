@@ -125,7 +125,7 @@ function cmdScore(args) {
 }
 
 function cmdDiff(args) {
-  const { scorePaths, formatReport } = require(path.join(ROOT, 'score', 'snip-score'));
+  const { scorePaths, formatReport, formatJson } = require(path.join(ROOT, 'score', 'snip-score'));
   const jsonOut = args.includes('--json');
   const failBelow = args.includes('--fail-below');
   const minScore = (() => {
@@ -158,28 +158,8 @@ function cmdDiff(args) {
   }
 
   const result = scorePaths(changedFiles);
-
-  if (jsonOut) {
-    const out = {
-      overall: result.overall,
-      prodLines: result.prodLines,
-      safeLines: result.safeLines,
-      files: result.files
-        .filter((f) => f.score !== null)
-        .map((f) => ({
-          file: path.relative(process.cwd(), f.file),
-          score: f.score,
-          deletableLoc: f.deletableLoc,
-          totalLoc: f.totalLoc,
-          prodLines: f.prodLines,
-          safeLines: f.safeLines,
-          findings: f.findings,
-        })),
-    };
-    console.log(JSON.stringify(out, null, 2));
-  } else {
-    console.log(formatReport(result, { rootDir: process.cwd() }));
-  }
+  const rootDir = process.cwd();
+  console.log(jsonOut ? formatJson(result, { rootDir }) : formatReport(result, { rootDir }));
 
   if (failBelow && minScore !== null && result.overall < minScore) {
     if (!jsonOut) console.error(`\nFAIL: score ${result.overall} is below minimum ${minScore}`);

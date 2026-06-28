@@ -226,7 +226,29 @@ function scorePaths(filePaths, opts = {}) {
   return aggregateResults(filtered.map((f) => ({ file: f, ...scoreFile(f) })));
 }
 
-module.exports = { PATTERNS, scoreFile, scoreDir, scorePaths, formatReport };
+function formatJson(result, { rootDir = process.cwd() } = {}) {
+  if (!result.files) {
+    return JSON.stringify(result, null, 2);
+  }
+  return JSON.stringify({
+    overall: result.overall,
+    prodLines: result.prodLines,
+    safeLines: result.safeLines,
+    files: result.files
+      .filter((f) => f.score !== null)
+      .map((f) => ({
+        file: path.relative(rootDir, f.file),
+        score: f.score,
+        deletableLoc: f.deletableLoc,
+        totalLoc: f.totalLoc,
+        prodLines: f.prodLines,
+        safeLines: f.safeLines,
+        findings: f.findings,
+      })),
+  }, null, 2);
+}
+
+module.exports = { PATTERNS, scoreFile, scoreDir, scorePaths, formatReport, formatJson };
 
 // CLI entry when run directly
 if (require.main === module) {
@@ -250,38 +272,14 @@ if (require.main === module) {
 
   if (stat.isDirectory()) {
     const result = scoreDir(target);
-    if (jsonOut) {
-      const out = {
-        overall: result.overall,
-        prodLines: result.prodLines,
-        safeLines: result.safeLines,
-        files: result.files
-          .filter((f) => f.score !== null)
-          .map((f) => ({
-            file: path.relative(target, f.file),
-            score: f.score,
-            deletableLoc: f.deletableLoc,
-            totalLoc: f.totalLoc,
-            prodLines: f.prodLines,
-            safeLines: f.safeLines,
-            findings: f.findings,
-          })),
-      };
-      console.log(JSON.stringify(out, null, 2));
-    } else {
-      console.log(formatReport(result, { rootDir: target }));
-    }
+    console.log(jsonOut ? formatJson(result, { rootDir: target }) : formatReport(result, { rootDir: target }));
     if (failBelow && minScore !== null && result.overall < minScore) {
       if (!jsonOut) console.error(`\nFAIL: score ${result.overall} is below minimum ${minScore}`);
       process.exit(1);
     }
   } else {
     const result = scoreFile(target);
-    if (jsonOut) {
-      console.log(JSON.stringify(result, null, 2));
-    } else {
-      console.log(formatReport(result));
-    }
+    console.log(jsonOut ? formatJson(result) : formatReport(result));
     if (failBelow && minScore !== null && result.score < minScore) {
       if (!jsonOut) console.error(`\nFAIL: score ${result.score} is below minimum ${minScore}`);
       process.exit(1);
