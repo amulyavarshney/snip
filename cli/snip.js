@@ -135,22 +135,25 @@ function cmdDiff(args) {
     return Number.isNaN(val) ? null : val;
   })();
 
-  // Collect changed files from git: staged + unstaged modifications and additions.
-  const gitResult = spawnSync('git', ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD'], {
-    encoding: 'utf8',
-    cwd: process.cwd(),
-  });
+  // Collect changed files from git: tracked modifications/additions vs HEAD, plus untracked files.
+  const cwd = process.cwd();
+  const spawnGit = (args) => spawnSync('git', args, { encoding: 'utf8', cwd });
 
-  if (gitResult.status !== 0) {
+  const trackedResult = spawnGit(['diff', '--name-only', '--diff-filter=ACMR', 'HEAD']);
+  if (trackedResult.status !== 0) {
     console.error('snip diff: git diff failed — are you inside a git repo?');
     process.exit(1);
   }
 
-  const changedFiles = gitResult.stdout
-    .trim()
-    .split('\n')
+  const untrackedResult = spawnGit(['ls-files', '--others', '--exclude-standard']);
+
+  const changedFiles = [
+    ...trackedResult.stdout.trim().split('\n'),
+    ...untrackedResult.stdout.trim().split('\n'),
+  ]
     .filter(Boolean)
-    .map((f) => path.resolve(process.cwd(), f));
+    .map((f) => path.resolve(cwd, f))
+    .filter((f, i, arr) => arr.indexOf(f) === i); // dedupe
 
   if (changedFiles.length === 0) {
     console.log('snip diff: no changed files');
@@ -192,7 +195,7 @@ Usage:
   snip init                     Scaffold .snip.json in current dir
   snip sync                     Regenerate IDE rule copies from rules/base.md
   snip score [path]             Score a file or directory (0-100)
-  snip diff                     Score only git-changed files (vs HEAD)
+  snip diff                     Score git-changed and untracked files
   snip bench                    Run benchmark suite (needs ANTHROPIC_API_KEY)
 
 Modes: lite | full | ultra | prod | off
