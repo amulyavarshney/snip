@@ -19,7 +19,7 @@ function detectLanguage(dir, maxDepth = 3) {
   const counts = { python: 0, typescript: 0, go: 0, rust: 0, java: 0, csharp: 0 };
 
   function scan(current, depth) {
-    if (depth > maxDepth) return;
+    if (depth >= maxDepth) return;
     let entries;
     try { entries = fs.readdirSync(current, { withFileTypes: true }); } catch (_) { return; }
     for (const entry of entries) {
