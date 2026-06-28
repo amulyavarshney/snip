@@ -14,9 +14,9 @@ Snip shifts the default the other way.
 
 ---
 
-## snip: vs snip:prod — why this matters
+## snip: vs snip:prod vs snip:safe — why this matters
 
-No other tool in this space makes this distinction:
+No other tool in this space makes these distinctions:
 
 ```js
 // snip: plain object dispatch; upgrade to class registry if handlers exceed 10
@@ -27,11 +27,14 @@ const handlers = { 'order.created': handleOrder, 'user.signup': handleSignup };
 const sig = Buffer.from(req.headers['x-signature'], 'hex');
 const expected = createHmac('sha256', secret).update(req.rawBody).digest();
 if (!timingSafeEqual(sig, expected)) return res.status(401).end();
+
+// snip:safe — shared fixture; deletion would give false confidence in tests
+const testDb = createTestDatabase();
 ```
 
-Both are minimal. One is safe to shrink further. One is not. `snip` tells you which is which.
+Both minimal paths are safe to shrink. The `snip:prod` path is not — it is a deliberate trust boundary. The `snip:safe` path is test infrastructure that must exist.
 
-`// snip:prod` lines are excluded from the snip score — they are correctly complex by definition.
+All three annotation types are excluded from the snip score — they are correctly complex by definition.
 
 ---
 
@@ -63,8 +66,9 @@ curl -o .github/copilot-instructions.md \
 ### npm CLI
 ```bash
 npm install -g @amulyavarshney/snip
-snip init       # create .snip.json in current project
-snip score src/ # score your codebase
+snip init        # create .snip.json in current project
+snip score src/  # score your codebase (0–100)
+snip diff        # score only changed + untracked files
 ```
 
 ---
@@ -93,11 +97,11 @@ Run yourself: `npm run bench` (requires `ANTHROPIC_API_KEY`)
 | `off` | Deactivated |
 
 ```
-/snip             activate at default
+/snip             activate at default (full)
 /snip ultra       switch to ultra
 /snip prod        switch to prod (recommended for financial/auth codebases)
 /snip lang go     switch language overlay
-/snip-review      review current code for over-engineering
+/snip-review      review current code for over-engineering only
 ```
 
 ---
@@ -122,18 +126,51 @@ Rung 0 is what makes snip different from other minimal-code tools — it fires o
 
 ## Language overlays
 
-Snip auto-detects your project's dominant language and adds idiomatic shortcuts.
+Snip auto-detects your project's dominant language (scanning up to 3 directory levels) and adds idiomatic shortcuts. Supported languages:
 
 **Python** — list comprehensions over loops, `@dataclass`, `functools.lru_cache`, `pathlib.Path`, `contextlib.suppress`
 
 **TypeScript** — discriminated unions over class hierarchies, `as const` over enums, `crypto.randomUUID()` (Node 19+), `fetch` (Node 18+)
 
-**Go** — `errors.New` + `fmt.Errorf("%w")` over custom error structs, table-driven tests, `sync.Once`, `io.Reader`/`io.Writer`
+**Go** — `errors.New` + `fmt.Errorf("%w")` over custom error types, table-driven tests, `sync.Once`, `io.Reader`/`io.Writer`
+
+**Rust** — `?` operator over match chains, `impl Trait` over generics, `From`/`Into` over explicit conversions, `thiserror` over manual `Display`
+
+**Java** — records over POJOs, `Optional` over null checks, streams over loops, `var` for local inference
+
+**C#** — pattern matching over type checks, `record` over classes for value types, `LINQ` over loops, `using` declarations
 
 Disable per-language in `.snip.json`:
 ```json
 { "overlays": { "python": false } }
 ```
+
+Set explicitly instead of auto-detecting:
+```bash
+snip lang typescript
+snip lang project rust   # set in .snip.json for the whole team
+```
+
+---
+
+## Scoring
+
+`snip score` measures how much of your code could be deleted or replaced with stdlib, on a 0–100 scale. `snip:prod` and `snip:safe` lines are excluded.
+
+```bash
+snip score src/                        # score a directory
+snip score src/ --min-score 60 --fail-below   # exit 1 if below threshold
+snip score src/ --json                 # machine-readable output
+snip diff                              # score only changed + untracked files
+snip diff --min-score 60 --fail-below --json  # CI-friendly
+```
+
+The scorer detects ~25 over-engineering patterns including:
+
+- Class-shaped ceremony: validators, repositories, builders, mappers, DTOs, singletons, abstract factories
+- Function-level bloat: 5+ positional params, `.bind(this)`, hand-rolled memoize, unnecessary `new Promise()` constructors
+- Hand-rolled stdlib: sort, base64, UUID, debounce, deep clone
+- Structural smells: single-implementation interfaces, event buses with one event type, logger wrappers
 
 ---
 
@@ -154,11 +191,14 @@ Commit `.snip.json` to your repo. Every developer and CI run picks it up automat
 
 ```yaml
 # .github/workflows/snip.yml
-- name: Check snip score
+- name: Snip score gate
   run: npx @amulyavarshney/snip score src/ --min-score 60 --fail-below
+
+- name: Snip diff gate (PR-only)
+  run: npx @amulyavarshney/snip diff --min-score 60 --fail-below
 ```
 
-The snip score (0–100) measures how much of your codebase could be deleted or replaced with stdlib. `snip:prod` lines are excluded — they're correctly complex.
+`snip diff` scores only the files changed in the current branch (tracked modifications + untracked new files), making it fast enough to run on every PR without scanning the whole tree.
 
 ---
 
