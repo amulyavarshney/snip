@@ -9,7 +9,6 @@ const OVERLAY_DIR = path.join(__dirname, '..', 'rules', 'overlays');
 
 const RUNTIME_MODES = new Set(['lite', 'full', 'ultra', 'prod']);
 const REVIEW_MODES = new Set(['review']);
-const ALL_MODES = new Set([...RUNTIME_MODES, ...REVIEW_MODES]);
 
 function normalizeMode(s) {
   if (typeof s !== 'string') return null;
